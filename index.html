@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loan Tracker by DMC Labs</title>
+  <meta name="theme-color" content="#2563eb" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root{
+      --bg:#eef3fb;--card:#fff;--text:#122033;--muted:#6b7a90;--brand:#2563eb;--brand-dark:#173a8f;
+      --green:#22c55e;--green-dark:#16a34a;--orange:#f59e0b;--orange-bg:#fff5e4;--blue-bg:#edf4ff;
+      --line:#dbe5f2;--shadow:0 12px 28px rgba(20,40,90,.08);--danger:#dc2626;--radius:20px
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#e7efff 0,#f5f8fd 220px);color:var(--text)}
+    .app{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:88px}
+    .topbar{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;padding:24px 18px 18px;border-bottom-left-radius:28px;border-bottom-right-radius:28px;box-shadow:var(--shadow)}
+    .brandline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+    h1{margin:0;font-size:31px;font-weight:800;letter-spacing:.2px}
+    .sub{font-size:13px;opacity:.92}
+    .lab-badge{width:40px;height:40px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-size:20px}
+    .search{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:13px 14px;color:#111827}
+    .search input{border:none;outline:none;width:100%;font-size:16px;background:transparent}
+    .content{padding:16px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:-26px}
+    .stat{background:#fff;border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+    .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .value{font-size:18px;font-weight:800}
+    .actions{display:grid;grid-template-columns:1.25fr 1fr 56px;gap:10px;margin:16px 0 14px}
+    button{border:none;border-radius:15px;padding:14px 16px;font-size:15px;font-weight:700;cursor:pointer}
+    .primary{background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff}
+    .secondary{background:#fff;color:var(--brand);border:1px solid var(--line)}
+    .icon-btn{padding:14px 0}
+    .section-title{font-size:13px;color:var(--muted);margin:10px 4px}
+    .borrower-list{display:flex;flex-direction:column;gap:14px}
+    .card{background:#fff;border-radius:20px;padding:15px;box-shadow:var(--shadow);border:1px solid #edf2f9}
+    .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .left{display:flex;align-items:center;gap:12px;min-width:0}
+    .avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;background:linear-gradient(135deg,#60a5fa,#0ea5e9);flex:0 0 auto}
+    .name{font-size:19px;font-weight:800;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta{font-size:14px;color:var(--muted)}
+    .balance{font-size:16px;font-weight:800;color:#108a4b;flex:0 0 auto}
+    .actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:13px}
+    .small{padding:10px 12px;border-radius:13px;font-size:14px}
+    .view{background:var(--blue-bg);color:var(--brand)}
+    .quick{background:var(--orange-bg);color:#b45309}
+    .footer-brand{position:fixed;left:50%;transform:translateX(-50%);bottom:0;max-width:430px;width:100%;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px 18px}
+    .footer-brand strong{display:block;color:var(--brand-dark)} .footer-brand .logo{font-size:14px;color:var(--muted)}
+    .empty{text-align:center;color:var(--muted);padding:30px 18px;background:#fff;border-radius:20px;box-shadow:var(--shadow)}
+    dialog{width:min(92vw,420px);border:none;border-radius:24px;padding:0;box-shadow:0 24px 55px rgba(15,23,42,.28)}
+    .modal{padding:18px}.modal h2{margin:0 0 12px}
+    .field{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+    .field label{font-size:13px;color:var(--muted);font-weight:700}
+    .field input,.field textarea{border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:16px}
+    .field textarea{min-height:90px;resize:vertical}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:8px}
+    .muted{background:#eef2f7;color:#334155}
+    .danger{background:var(--danger);color:#fff}
+    .detail-header{background:#fff;border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+    .payment-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+    .menu-list{display:flex;flex-direction:column;gap:10px}
+    .print-note{font-size:12px;color:var(--muted);margin-top:6px}
+    @media (max-width:380px){.stats,.actions{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brandline">
+        <div>
+          <h1>Loan Tracker</h1>
+          <div class="sub">Simple loan manager by DMC Labs</div>
+        </div>
+        <div class="lab-badge">⚗️</div>
+      </div>
+      <div class="search"><span>🔎</span><input id="searchInput" type="text" placeholder="Search borrower" /></div>
+    </div>
+    <div class="content">
+      <div class="stats">
+        <div class="stat"><div class="label">Borrowers</div><div class="value" id="countStat">0</div></div>
+        <div class="stat"><div class="label">Total Loan</div><div class="value" id="loanStat">₱0</div></div>
+        <div class="stat"><div class="label">Remaining</div><div class="value" id="remainStat">₱0</div></div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="addBorrowerBtn">+ Add Borrower</button>
+        <button class="secondary" id="printBtn">Print Report</button>
+        <button class="secondary icon-btn" id="menuBtn">⋯</button>
+      </div>
+      <div class="section-title">Borrowers</div>
+      <div id="borrowerList" class="borrower-list"></div>
+    </div>
+  </div>
+  <div class="footer-brand"><strong>Loan Tracker</strong><div class="logo">Built by DMC Labs</div></div>
+
+  <dialog id="borrowerDialog">
+    <form class="modal" method="dialog" id="borrowerForm">
+      <h2 id="borrowerDialogTitle">Add Borrower</h2>
+      <div class="field"><label for="name">Name</label><input id="name" required /></div>
+      <div class="field"><label for="loan">Loan Amount</label><input id="loan" type="number" min="0" step="0.01" required /></div>
+      <div class="field"><label for="notes">Notes</label><textarea id="notes" placeholder="Optional notes"></textarea></div>
+      <div class="modal-actions">
+        <button class="muted" type="button" onclick="borrowerDialog.close()">Cancel</button>
+        <button class="primary" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="detailDialog"><div class="modal"><div id="detailContent"></div></div></dialog>
+
+  <dialog id="menuDialog">
+    <div class="modal">
+      <h2>More</h2>
+      <div class="menu-list">
+        <button class="secondary" id="shareReportBtn">Share Report</button>
+        <button class="secondary" id="exportBtn">Export Backup</button>
+        <button class="secondary" id="importBtn">Import Backup</button>
+        <button class="secondary" id="printAllBtn">Print All Borrowers</button>
+        <button class="secondary" id="aboutBtn">About DMC Labs</button>
+        <button class="muted" onclick="menuDialog.close()">Close</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" hidden />
+    </div>
+  </dialog>
+
+<script>
+const money = n => new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP',maximumFractionDigits:0}).format(n||0);
+const seed = [
+  {id: crypto.randomUUID(), name:'Ana Cruz', loan:5000, notes:'Rice store supplies', payments:[{id:crypto.randomUUID(), amount:2000, date:new Date().toISOString()}]},
+  {id: crypto.randomUUID(), name:'Juan Dela Cruz', loan:5000, notes:'Medical expenses', payments:[{id:crypto.randomUUID(), amount:1000, date:new Date().toISOString()}]},
+  {id: crypto.randomUUID(), name:'Maria Santos', loan:8000, notes:'School fees', payments:[{id:crypto.randomUUID(), amount:4000, date:new Date().toISOString()}]}
+];
+let borrowers = JSON.parse(localStorage.getItem('dmc-loan-tracker') || 'null') || seed;
+let editingId = null;
+const save = ()=> localStorage.setItem('dmc-loan-tracker', JSON.stringify(borrowers));
+const totalPaid = b => b.payments.reduce((a,p)=>a+Number(p.amount),0);
+const balance = b => Number(b.loan) - totalPaid(b);
+
+function render(){
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const filtered = [...borrowers].sort((a,b)=>a.name.localeCompare(b.name)).filter(b=>b.name.toLowerCase().includes(q));
+  document.getElementById('countStat').textContent = borrowers.length;
+  document.getElementById('loanStat').textContent = money(borrowers.reduce((a,b)=>a+Number(b.loan),0));
+  document.getElementById('remainStat').textContent = money(borrowers.reduce((a,b)=>a+balance(b),0));
+  const list = document.getElementById('borrowerList');
+  if(!filtered.length){ list.innerHTML = '<div class="empty">No borrower found.</div>'; return; }
+  list.innerHTML = filtered.map(b=>`
+    <div class="card">
+      <div class="row">
+        <div class="left">
+          <div class="avatar">${b.name.charAt(0).toUpperCase()}</div>
+          <div style="min-width:0">
+            <div class="name">${b.name}</div>
+            <div class="meta">Loan: ${money(b.loan)} · Paid: ${money(totalPaid(b))}</div>
+          </div>
+        </div>
+        <div class="balance">${money(balance(b))}</div>
+      </div>
+      <div class="actions-row">
+        <button class="small view" onclick="openDetail('${b.id}')">View Details</button>
+        <button class="small quick" onclick="quickPayment('${b.id}')">+ Payment</button>
+      </div>
+    </div>`).join('');
+}
+function openBorrowerDialog(id=null){
+  editingId = id;
+  const b = borrowers.find(x=>x.id===id);
+  borrowerDialogTitle.textContent = b ? 'Edit Borrower' : 'Add Borrower';
+  name.value = b?.name || ''; loan.value = b?.loan || ''; notes.value = b?.notes || '';
+  borrowerDialog.showModal();
+}
+borrowerForm.addEventListener('submit', e=>{
+  e.preventDefault();
+  const n = name.value.trim(), l = Number(loan.value), nt = notes.value.trim();
+  if(!n || l < 0) return;
+  if(editingId){
+    const b = borrowers.find(x=>x.id===editingId); b.name=n; b.loan=l; b.notes=nt;
+  } else borrowers.push({id:crypto.randomUUID(), name:n, loan:l, notes:nt, payments:[]});
+  save(); render(); borrowerDialog.close();
+});
+function borrowerReportText(b){
+  const payments = b.payments.slice().sort((a,b)=>new Date(b.date)-new Date(a.date))
+  .map(p=>`${new Date(p.date).toLocaleDateString('en-PH')} - ${money(p.amount)}`).join('\n');
+  return `${b.name}\nLoan: ${money(b.loan)}\nPaid: ${money(totalPaid(b))}\nRemaining: ${money(balance(b))}\n${b.notes ? 'Notes: ' + b.notes + '\n' : ''}\nPayment History:\n${payments || 'No payments yet.'}`;
+}
+function openDetail(id){
+  const b = borrowers.find(x=>x.id===id);
+  detailContent.innerHTML = `
+    <div class="detail-header">
+      <h2 style="margin:0 0 8px">${b.name}</h2>
+      <div class="meta" style="margin-bottom:6px">Total Loan: <strong>${money(b.loan)}</strong></div>
+      <div class="meta" style="margin-bottom:6px">Total Paid: <strong>${money(totalPaid(b))}</strong></div>
+      <div class="meta" style="margin-bottom:10px">Remaining: <strong style="color:#b45309">${money(balance(b))}</strong></div>
+      <div class="field"><label for="paymentAmount">Add Payment</label><input id="paymentAmount" type="number" min="1" step="0.01" placeholder="Enter amount" /></div>
+      <div class="actions-row">
+        <button class="primary" type="button" onclick="addPayment('${b.id}')">+ Add Payment</button>
+        <button class="secondary" type="button" onclick="printBorrower('${b.id}')">Print This Borrower</button>
+        <button class="secondary" type="button" onclick="shareBorrower('${b.id}')">Share</button>
+        <button class="secondary" type="button" onclick="openBorrowerDialog('${b.id}')">Edit</button>
+        <button class="danger" type="button" onclick="deleteBorrower('${b.id}')">Delete</button>
+      </div>
+      ${b.notes ? `<div class="print-note">Notes: ${b.notes}</div>` : ''}
+    </div>
+    <div class="card">
+      <div class="name" style="font-size:18px">Payment History</div>
+      ${b.payments.length ? b.payments.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=>`
+        <div class="payment-item">
+          <div>${new Date(p.date).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})}</div>
+          <div style="display:flex;align-items:center;gap:10px"><strong>${money(p.amount)}</strong><button class="small muted" onclick="deletePayment('${b.id}','${p.id}')">Delete</button></div>
+        </div>`).join('') : '<div class="empty" style="margin-top:12px">No payments yet.</div>'}
+      <div class="modal-actions" style="margin-top:12px"><button class="muted" onclick="detailDialog.close()">Close</button></div>
+    </div>`;
+  detailDialog.showModal();
+}
+function addPayment(id){
+  const amount = Number(document.getElementById('paymentAmount').value);
+  if(!amount || amount <= 0) return;
+  borrowers.find(x=>x.id===id).payments.push({id:crypto.randomUUID(), amount, date:new Date().toISOString()});
+  save(); render(); openDetail(id);
+}
+function quickPayment(id){
+  const amount = Number(prompt('Enter payment amount'));
+  if(!amount || amount <= 0) return;
+  borrowers.find(x=>x.id===id).payments.push({id:crypto.randomUUID(), amount, date:new Date().toISOString()});
+  save(); render();
+}
+function deleteBorrower(id){
+  if(!confirm('Delete this borrower?')) return;
+  borrowers = borrowers.filter(x=>x.id!==id); save(); render(); detailDialog.close();
+}
+function deletePayment(borrowerId,paymentId){
+  const b = borrowers.find(x=>x.id===borrowerId); b.payments = b.payments.filter(p=>p.id!==paymentId);
+  save(); render(); openDetail(borrowerId);
+}
+function reportHtml(title, body){
+  return `<!DOCTYPE html><html><head><title>${title}</title><style>body{font-family:Arial,Helvetica,sans-serif;padding:24px;color:#111}h1{margin-bottom:4px}.sub{color:#555;margin-bottom:20px}.card{border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:14px}.line{margin:5px 0}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #ddd;padding:8px;text-align:left}</style></head><body>${body}</body></html>`;
+}
+function printAllBorrowers(){
+  const cards = borrowers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(b=>`<div class="card"><h2>${b.name}</h2><div class="line">Loan: ${money(b.loan)}</div><div class="line">Paid: ${money(totalPaid(b))}</div><div class="line">Remaining: ${money(balance(b))}</div>${b.notes ? `<div class="line">Notes: ${b.notes}</div>` : ''}</div>`).join('');
+  const w = window.open('', '_blank'); w.document.write(reportHtml('Loan Tracker Report', `<h1>Loan Tracker Report</h1><div class="sub">By DMC Labs</div>${cards}`)); w.document.close(); setTimeout(()=>w.print(),300);
+}
+function printBorrower(id){
+  const b = borrowers.find(x=>x.id===id);
+  const rows = b.payments.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=>`<tr><td>${new Date(p.date).toLocaleDateString('en-PH')}</td><td>${money(p.amount)}</td></tr>`).join('') || '<tr><td colspan="2">No payments yet.</td></tr>';
+  const w = window.open('', '_blank'); w.document.write(reportHtml(`${b.name} Report`, `<h1>${b.name}</h1><div class="sub">Loan Tracker by DMC Labs</div><div class="card"><div class="line">Loan: ${money(b.loan)}</div><div class="line">Paid: ${money(totalPaid(b))}</div><div class="line">Remaining: ${money(balance(b))}</div>${b.notes ? `<div class="line">Notes: ${b.notes}</div>` : ''}<table><thead><tr><th>Date</th><th>Payment</th></tr></thead><tbody>${rows}</tbody></table></div>`)); w.document.close(); setTimeout(()=>w.print(),300);
+}
+async function shareText(title,text){
+  if(navigator.share){ try{ await navigator.share({title,text}); } catch(e){} }
+  else {
+    try{ await navigator.clipboard.writeText(text); alert('Report copied. You can paste it into Messenger, email, or notes.'); }
+    catch{ alert(text); }
+  }
+}
+function shareBorrower(id){ const b = borrowers.find(x=>x.id===id); shareText(`${b.name} Report`, borrowerReportText(b)); }
+function allBorrowersText(){ return borrowers.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(b=>`${b.name}\nLoan: ${money(b.loan)}\nPaid: ${money(totalPaid(b))}\nRemaining: ${money(balance(b))}\n`).join('\n'); }
+
+addBorrowerBtn.addEventListener('click',()=>openBorrowerDialog());
+searchInput.addEventListener('input',render);
+printBtn.addEventListener('click',printAllBorrowers);
+menuBtn.addEventListener('click',()=>menuDialog.showModal());
+shareReportBtn.addEventListener('click',()=>shareText('Loan Tracker Report', allBorrowersText()));
+printAllBtn.addEventListener('click',printAllBorrowers);
+exportBtn.addEventListener('click',()=>{
+  const blob = new Blob([JSON.stringify(borrowers,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='loan-tracker-backup.json'; a.click(); URL.revokeObjectURL(a.href);
+});
+importBtn.addEventListener('click',()=>importFile.click());
+importFile.addEventListener('change', async e=>{
+  const file = e.target.files[0]; if(!file) return;
+  try{ const data = JSON.parse(await file.text()); if(Array.isArray(data)){ borrowers=data; save(); render(); menuDialog.close(); } else alert('Invalid backup file.'); }
+  catch{ alert('Could not import file.'); }
+});
+aboutBtn.addEventListener('click',()=>alert('Loan Tracker\nBuilt by DMC Labs\n\nThis app stores records on the device for simple offline use.'));
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js')); }
+render();
+</script>
+</body>
+</html>
