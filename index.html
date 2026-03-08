@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loan Tracker by DMC Labs</title>
-  <meta name="theme-color" content="#2563eb" />
   <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#2563eb" />
   <link rel="apple-touch-icon" href="icon-192.png">
   <style>
     :root{
@@ -100,7 +100,7 @@
       <div class="field"><label for="loan">Loan Amount</label><input id="loan" type="number" min="0" step="0.01" required /></div>
       <div class="field"><label for="notes">Notes</label><textarea id="notes" placeholder="Optional notes"></textarea></div>
       <div class="modal-actions">
-        <button class="muted" type="button" onclick="borrowerDialog.close()">Cancel</button>
+        <button class="muted" type="button" onclick="document.getElementById('borrowerDialog').close()">Cancel</button>
         <button class="primary" type="submit">Save</button>
       </div>
     </form>
@@ -162,21 +162,56 @@ function render(){
       </div>
     </div>`).join('');
 }
-function openBorrowerDialog(id=null){
+function openBorrowerDialog(id = null){
   editingId = id;
-  const b = borrowers.find(x=>x.id===id);
-  borrowerDialogTitle.textContent = b ? 'Edit Borrower' : 'Add Borrower';
-  name.value = b?.name || ''; loan.value = b?.loan || ''; notes.value = b?.notes || '';
-  borrowerDialog.showModal();
+  const b = borrowers.find(x => x.id === id);
+
+  const nameInput = document.getElementById('name');
+  const loanInput = document.getElementById('loan');
+  const notesInput = document.getElementById('notes');
+  const titleEl = document.getElementById('borrowerDialogTitle');
+  const dialog = document.getElementById('borrowerDialog');
+
+  titleEl.textContent = b ? 'Edit Borrower' : 'Add Borrower';
+  nameInput.value = b?.name || '';
+  loanInput.value = b?.loan || '';
+  notesInput.value = b?.notes || '';
+
+  dialog.showModal();
 }
-borrowerForm.addEventListener('submit', e=>{
+
+document.getElementById('borrowerForm').addEventListener('submit', e => {
   e.preventDefault();
-  const n = name.value.trim(), l = Number(loan.value), nt = notes.value.trim();
-  if(!n || l < 0) return;
-  if(editingId){
-    const b = borrowers.find(x=>x.id===editingId); b.name=n; b.loan=l; b.notes=nt;
-  } else borrowers.push({id:crypto.randomUUID(), name:n, loan:l, notes:nt, payments:[]});
-  save(); render(); borrowerDialog.close();
+
+  const nameInput = document.getElementById('name');
+  const loanInput = document.getElementById('loan');
+  const notesInput = document.getElementById('notes');
+  const dialog = document.getElementById('borrowerDialog');
+
+  const n = nameInput.value.trim();
+  const l = Number(loanInput.value);
+  const nt = notesInput.value.trim();
+
+  if (!n || l < 0 || Number.isNaN(l)) return;
+
+  if (editingId) {
+    const b = borrowers.find(x => x.id === editingId);
+    b.name = n;
+    b.loan = l;
+    b.notes = nt;
+  } else {
+    borrowers.push({
+      id: crypto.randomUUID(),
+      name: n,
+      loan: l,
+      notes: nt,
+      payments: []
+    });
+  }
+
+  save();
+  render();
+  dialog.close();
 });
 function borrowerReportText(b){
   const payments = b.payments.slice().sort((a,b)=>new Date(b.date)-new Date(a.date))
