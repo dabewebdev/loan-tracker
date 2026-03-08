@@ -306,7 +306,28 @@ importFile.addEventListener('change', async e=>{
   catch{ alert('Could not import file.'); }
 });
 aboutBtn.addEventListener('click',()=>alert('Loan Tracker\nBuilt by DMC Labs\n\nThis app stores records on the device for simple offline use.'));
-if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js')); }
+
+self.addEventListener('install', event => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('fetch', event => {
+  // simple pass-through
+});
+
+
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('Service worker registered'))
+      .catch(err => console.error('Service worker registration failed:', err));
+  });
+}
 render();
 </script>
 </body>
